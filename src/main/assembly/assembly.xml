@@ -1,0 +1,51 @@
+<assembly>
+    <id>assembly</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>conf</outputDirectory>
+            <excludes>
+                <exclude>/application.properties</exclude>
+                <exclude>/logback.xml</exclude>
+            </excludes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly/bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+    </fileSets>
+    <files>
+        <file>
+            <source>
+                src/main/resources/application.properties
+            </source>
+            <outputDirectory>conf</outputDirectory>
+            <fileMode>0755</fileMode>
+            <destName>application.properties</destName>
+        </file>
+        <file>
+            <source>
+                src/main/resources/logback.xml
+            </source>
+            <outputDirectory>conf</outputDirectory>
+            <fileMode>0755</fileMode>
+            <destName>logback.xml</destName>
+        </file>
+    </files>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory> <!-- 将scope为runtime的依赖包打包到lib目录下。 -->
+            <scope>runtime</scope>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory> <!-- 将scope为system的依赖包打包到lib目录下。 -->
+            <scope>system</scope>
+        </dependencySet>
+    </dependencySets>
+</assembly>

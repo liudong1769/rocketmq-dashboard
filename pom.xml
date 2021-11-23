@@ -248,199 +248,91 @@
         </dependency>
 
     </dependencies>
+    <!--打包方式-->
     <build>
+        <finalName>${project.artifactId}</finalName>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <targetPath>${project.build.directory}/resources</targetPath>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>**/*.properties</include>
+                    <include>**/*.p12</include>
+                    <include>**/*.truststore</include>
+                    <include>**/*.json</include>
+                    <include>**/*.sql</include>
+                    <include>**/dubbo/*</include>
+                    <include>*</include>
+                </includes>
+            </resource>
+            <!--这个是app-bin-->
+            <resource>
+                <targetPath>${project.build.directory}/classes</targetPath>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <compilerVersion>${maven.compiler.source}</compilerVersion>
-                    <showDeprecation>true</showDeprecation>
-                    <showWarnings>true</showWarnings>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <version>2.5.4</version>
             </plugin>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
             </plugin>
-            <!-- Use dockerfile-maven instead, https://github.com/spotify/dockerfile-maven -->
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.11</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>javax.activation-api</artifactId>
-                        <version>1.2.0</version>
-                        <scope>compile</scope>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
-                    <dockerDirectory>src/main/docker</dockerDirectory>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
-                        </resource>
-                    </resources>
-                    <imageTags>
-                        <imageTag>${project.version}</imageTag>
-                        <imageTag>latest</imageTag>
-                    </imageTags>
-                </configuration>
-            </plugin>
+            <!-- 拷贝依赖的jar包到lib目录 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.17</version>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.8</version>
                 <executions>
                     <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
                         <configuration>
-                            <excludes>src/main/resources</excludes>
-                            <configLocation>style/rmq_checkstyle.xml</configLocation>
-                            <encoding>UTF-8</encoding>
-                            <consoleOutput>true</consoleOutput>
-                            <failsOnError>true</failsOnError>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.4</version>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.7</version>
-                <executions>
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.eluder.coveralls</groupId>
-                <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.3.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                        <version>${jaxb-api.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <version>0.12</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
                 <configuration>
-                    <excludes>
-                        <exclude>.gitignore</exclude>
-                        <exclude>.travis.yml</exclude>
-                        <exclude>.asf.yaml</exclude>
-                        <exclude>README.md</exclude>
-                        <exclude>.github/**</exclude>
-                        <exclude>docs/**</exclude>
-                        <exclude>src/main/resources/static/vendor/**</exclude>
-                        <exclude>src/main/resources/static/src/data/**</exclude>
-                        <exclude>frontend/node_modules/**</exclude>
-                        <exclude>frontend/build/**</exclude>
-                        <exclude>frontend/**.json</exclude>
-                        <exclude>frontend/**.lock</exclude>
-                        <exclude>frontend/public/manifest.json</exclude>
-                        <exclude>package-lock.json</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.11.3</version>
-                <configuration>
-                    <workingDirectory>frontend</workingDirectory>
-                    <installDirectory>target</installDirectory>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>install node and yarn</id>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>install-node-and-yarn</goal>
-                        </goals>
-                        <configuration>
-                            <nodeVersion>v16.2.0</nodeVersion>
-                            <yarnVersion>v1.22.10</yarnVersion>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>yarn install</id>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>yarn build</id>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>build</arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <target>
-                                <copy todir="${project.build.directory}/classes/public">
-                                    <fileset dir="${project.basedir}/frontend/build"/>
-                                </copy>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+    <!--打包方式-->
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <conf>dev</conf>
+                <logback>dev</logback>
+            </properties>
+        </profile>
+    </profiles>
 </project>
